@@ -15,7 +15,6 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
 
@@ -26,21 +25,10 @@ class _SignUpPageState extends State<SignUpPage> {
     _password.dispose();
   }
 
+  bool isLoading = false;
+
   @override
   Widget build(BuildContext context) {
-    loginAuth() async{
-      try{
-        String result = await SuperBaseAuth().signUpAuthEmailPassword(_email.text.trim(), _password.text.trim());
-        if(result == 'Success'){
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(),));
-        }else{
-          showSnackBar(context, result);
-        }
-      }catch(e){
-        showSnackBar(context, e.toString());
-      }
-    }
-
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.grey,
@@ -48,11 +36,11 @@ class _SignUpPageState extends State<SignUpPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-             const SizedBox(
+              const SizedBox(
                 height: 50,
               ),
               const Padding(
-                padding:  EdgeInsets.all(10.0),
+                padding: EdgeInsets.all(10.0),
                 child: Text(
                   'Todo Schedule',
                   style: TextStyle(
@@ -69,7 +57,7 @@ class _SignUpPageState extends State<SignUpPage> {
               ),
               Padding(
                 padding:
-                const EdgeInsets.symmetric(vertical: 10, horizontal: 50),
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 50),
                 child: Row(
                   children: const [
                     Text(
@@ -94,10 +82,43 @@ class _SignUpPageState extends State<SignUpPage> {
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
-                      InputTextField(hint: 'Email', isObscured: false, icons: Icon(Icons.mail), textInputType: TextInputType.emailAddress, controller: _email,),
-                      InputTextField(hint: 'Password', isObscured: true, icons: Icon(Icons.password), textInputType: TextInputType.visiblePassword, controller: _password,),
-                      ElevatedButton(onPressed: loginAuth, child: const Text('Sign Up')),
-                      Row(children: [Spacer(), TextButton(onPressed: (){}, child: Text('Sign up with phone number'))],),
+                      InputTextField(
+                        hint: 'Email',
+                        isObscured: false,
+                        icons: Icon(Icons.mail),
+                        textInputType: TextInputType.emailAddress,
+                        controller: _email,
+                      ),
+                      InputTextField(
+                        hint: 'Password',
+                        isObscured: true,
+                        icons: Icon(Icons.password),
+                        textInputType: TextInputType.visiblePassword,
+                        controller: _password,
+                      ),
+                      ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              isLoading = true;
+                            });
+                            SuperBaseAuth().signUpAuthEmailPassword(
+                              _email.text.trim(),
+                              _password.text.trim(),
+                              context,
+                            );
+                            setState(() {
+                              isLoading = false;
+                            });
+                          },
+                          child: isLoading? const CircularProgressIndicator() :const Text('Sign Up')),
+                      Row(
+                        children: [
+                          const Spacer(),
+                          TextButton(
+                              onPressed: () {},
+                              child: Text('Sign up with phone number'))
+                        ],
+                      ),
                     ],
                   ),
                 ),

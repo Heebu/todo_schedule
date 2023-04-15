@@ -1,3 +1,6 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:my_todo/Resueables/show_snack_bar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 
@@ -6,8 +9,8 @@ class SuperBaseAuth {
   final supabase = Supabase.instance.client.auth;
 
   //Sign up with email and password
-  Future<String> signUpAuthEmailPassword(String email, String password) async{
-    String result = 'An unexpected error occurred';
+   signUpAuthEmailPassword(String email, String password, BuildContext context) async{
+
 
    if(email.toString().isNotEmpty || password.toString().isNotEmpty || (email.toString().isNotEmpty && password.toString().isNotEmpty)) {
       try {
@@ -18,18 +21,18 @@ class SuperBaseAuth {
         final Session? session = res.session;
         final User? user = res.user;
 
-        result = 'Success';
+        Navigator.pop(context);
       } catch (e) {
-        result = e.toString();
+        showSnackBar(context, e.toString());
+
       }
     }else{
-     result = 'Please fill in the text fields';
+     showSnackBar(context, 'Please fill in the text fields');
    }
-    return result;
   }
 
   //Sign in with email and password
-  Future<String> signInEmailPassword(String email, String password) async{
+  signInEmailPassword(String email, String password, BuildContext context, Widget routePage) async{
     String result = 'An unexpected error occurred';
 
     if(email.toString().isNotEmpty || password.toString().isNotEmpty || (email.toString().isNotEmpty && password.toString().isNotEmpty)) {
@@ -40,15 +43,13 @@ class SuperBaseAuth {
         );
         final Session? session = res.session;
         final User? user = res.user;
-
-        result = 'Success';
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => routePage,));
       } catch (e) {
-        result = e.toString();
+        showSnackBar(context, e.toString());
       }
     }else{
-      result = 'Please fill in the text fields';
+      showSnackBar(context, 'Please fill in the text fields');
     }
-    return result;
   }
 
   //verification with phone number (still in progress...)
@@ -68,6 +69,30 @@ class SuperBaseAuth {
     return result;
   }
 
+  //verification otp with email link
+  Future<String> verifyOTPLink(String email) async{
+    String result = 'An unexpected error occurred';
+
+    if(email.toString().isNotEmpty) {
+      try {
+        final AuthResponse res = await supabase.verifyOTP(
+          type: OtpType.magiclink,
+         email: email,
+          token: '',
+        );
+        final Session? session = res.session;
+        final User? user = res.user;
+
+        result = 'Success';
+      } catch (e) {
+        result = e.toString();
+      }
+    }else{
+      result = 'Please fill in the text fields';
+    }
+    return result;
+  }
+
   //verification otp (still in progress...)
   Future<String> verifyOTP(String phoneNumber) async{
     String result = 'An unexpected error occurred';
@@ -75,7 +100,7 @@ class SuperBaseAuth {
     if(phoneNumber.toString().isNotEmpty || phoneNumber.toString().length >= 12) {
       try {
         final AuthResponse res = await supabase.verifyOTP(
-          type: OtpType.sms,
+          type: OtpType.magiclink,
           phone: phoneNumber,
           token: '',
         );
@@ -93,33 +118,27 @@ class SuperBaseAuth {
   }
 
 //Forget Password
-  Future<String> forgotPassword(String email) async{
-    String result = 'An unexpected error occurred';
-
+  forgotPassword(String email, BuildContext context) async{
     if(email.toString().isNotEmpty) {
       try {
          await supabase.resetPasswordForEmail(email);
-        result = 'Success';
+        Navigator.pop(context);
+        showSnackBar(context, 'A reset link has been sent to $email');
       } catch (e) {
-        result = e.toString();
+        showSnackBar(context, e.toString());
       }
     }else{
-      result = 'Please fill in the text fields';
+      showSnackBar(context, 'Please fill in the text field');
     }
-    return result;
   }
 
 //Sign Out
-  Future<String> signOut() async{
-    String result = 'An unexpected error occurred';
+  signOut(BuildContext context) async{
       try {
-         await supabase.signOut();
-        result = 'Success';
+        await supabase.signOut();
+        Navigator.pop(context);
       } catch (e) {
-        result = e.toString();
-      }
-    return result;
+        showSnackBar(context, e.toString());
+    }
   }
-
-
 }

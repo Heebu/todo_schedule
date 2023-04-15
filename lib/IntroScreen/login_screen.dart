@@ -24,21 +24,10 @@ class _LogInPageState extends State<LogInPage> {
     _password.dispose();
   }
 
+  bool isLoading = false;
+
   @override
   Widget build(BuildContext context) {
-    loginAuth() async{
-      try{
-        String result = await SuperBaseAuth().signInEmailPassword(_email.text.trim(), _password.text.trim());
-        if(result == 'Success'){
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(),));
-        }else{
-          showSnackBar(context, result);
-        }
-      }catch(e){
-        showSnackBar(context, e.toString());
-      }
-    }
-
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.grey,
@@ -92,12 +81,56 @@ class _LogInPageState extends State<LogInPage> {
                   padding: EdgeInsets.all(20),
                   child: Column(
                     children: [
-                      InputTextField(hint: 'Email', isObscured: false, icons: Icon(Icons.mail), textInputType: TextInputType.emailAddress, controller: _email,),
-                      InputTextField(hint: 'Password', isObscured: true, icons: Icon(Icons.password), textInputType: TextInputType.visiblePassword, controller: _password,),
-                       ElevatedButton(onPressed: loginAuth, child: Text('Login')),
-                      Row(children: [TextButton(onPressed: (){
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const SignUpPage(),));
-                      }, child: Text('Create an account', style: TextStyle(color: Colors.black),)), Spacer(), TextButton(onPressed: (){}, child: Text('Forgot Password?'))],),
+                      InputTextField(
+                        hint: 'Email',
+                        isObscured: false,
+                        icons: Icon(Icons.mail),
+                        textInputType: TextInputType.emailAddress,
+                        controller: _email,
+                      ),
+                      InputTextField(
+                        hint: 'Password',
+                        isObscured: true,
+                        icons: Icon(Icons.password),
+                        textInputType: TextInputType.visiblePassword,
+                        controller: _password,
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            isLoading = true;
+                          });
+                          SuperBaseAuth().signInEmailPassword(
+                            _email.text.trim(),
+                            _password.text.trim(),
+                            context,
+                            const MyHomePage(),
+                          );
+                          setState(() {
+                            isLoading = false;
+                          });
+                        },
+                        child: isLoading? const CircularProgressIndicator() : const Text('Login'),
+                      ),
+                      Row(
+                        children: [
+                          TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const SignUpPage(),
+                                    ));
+                              },
+                              child: Text(
+                                'Create an account',
+                                style: TextStyle(color: Colors.black),
+                              )),
+                          Spacer(),
+                          TextButton(
+                              onPressed: () {}, child: Text('Forgot Password?'))
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -109,5 +142,3 @@ class _LogInPageState extends State<LogInPage> {
     );
   }
 }
-
-
